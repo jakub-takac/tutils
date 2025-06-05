@@ -63,8 +63,6 @@ class TArgParse:
         for arg in list_of_args[1:]:
             if not arg.startswith('-'):
                 list_positional_args.append(arg)
-                if not arg[0].isalpha():
-                    print("Warning: a strange argument has been passed. All positional arguments should start with a letter of the alphabet \n", "Continuing...")
         return list_positional_args
     
     def __init__(
