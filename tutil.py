@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #This script will take as input a string and output the number of times each letter appears.
-#
+
 #General modules
 import sys
 import os

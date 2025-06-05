@@ -178,6 +178,11 @@ def uncommenter(path):
     for line in lines:
         stripped_line = line.rstrip('\n')
         changed = False
+        # Every line where % is the first character (even if there are some spacebars before) is removed. Lines which were empty from the beggining are preserved
+        if not stripped_line.lstrip() == '':
+            if stripped_line.lstrip()[0]== '%' and remove:
+                counter += 1
+                continue
         for i in list(range(len(stripped_line))):
             # Separate loogic on the first character as we cannot check the previous one for backslashes
             if i == 0:
@@ -202,7 +207,6 @@ def uncommenter(path):
             modified_lines.append(stripped_line)
         else:
             continue
-    print(modified_lines)
     return modified_lines, counter
     
 
@@ -238,7 +242,6 @@ def separator(path):
         counter+= n
         # Temp line is now added back to modified_lines. Since .split actually splits the temp_line (which is a string) into a list of strings, so .extend needs to be used    
         modified_lines.extend(temp_line.split('\n'))
-    
     return modified_lines, counter
 
 
