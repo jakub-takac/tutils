@@ -1,0 +1,6 @@
+*.tex
+*.txt
+*.svg
+*.png
+
+/__pycache__
