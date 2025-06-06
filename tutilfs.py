@@ -9,7 +9,7 @@ from pathlib import Path
 
 list_of_scripts=['separator', 'testscript', 'lister', 'uncommenter']
 
-# This function takes as input a file (rather, its name, usually something like sys.argv[1]) as a string. It makes a copy of the file into the directory /path/to/tutil-log, where the path to file is /path/to/file. The backup copy has the name: name-of-file-date_time.extension-of-file. So that if file is example.txt, the copy is /path/to/tutil-log/example-date_time.txt. If this action is succesful, True is returned, if not, False is returned and an error message printed.
+# This function takes as input a file (rather, its name). It makes a copy of the file into the directory /path/to/tutil-log, where the path to file is /path/to/file. The backup copy has the name: name_of_file-date_time.extension_of_file. So that if file is example.txt, the copy is /path/to/tutil-log/example-date_time.txt. If this action is succesful, True is returned, if not, False is returned and an error message printed.
 def log_backup(file):
     # This stores the path to the directory in which the file is located
     input_dir = os.path.dirname(os.path.abspath(file))
@@ -31,10 +31,10 @@ def log_backup(file):
     backup_name = f"{name_root}-{timestamp}{name_ext}"
     backup_path = os.path.join(log_dir, backup_name)
 
-    # Checks if a backup file with the exact same name already exists and in this case does nothing. This should only happen if this function is called to the same file multiple times within the same second which should never happen.
+    # Checks if a backup file with the exact same name already exists and in this case does nothing. This should only happen if this function is called to the same file multiple times within the same second.
     if os.path.exists(backup_path):
         print(f"Error: Backup file already exists: {backup_path}")
-        print("This should only happen if this function has been called multiple times within the same second, which should NEVER happen")
+        print("This should only happen if this function has been called multiple times within the same second.")
         return False # This is so that whoever calles this function can verify if the backup has been made
     # First open file for reading as src (source), then open backup_path (full path to the backup file) for writing as dst (destination). Then reads from src and writes into dst.
     with open(file, 'r', encoding='utf-8') as src, open(backup_path, 'w', encoding='utf-8') as dst:
@@ -64,7 +64,7 @@ class TArgParse:
             if not arg.startswith('-'):
                 list_positional_args.append(arg)
         return list_positional_args
-    
+    # Initilizes the new instance of this class
     def __init__(
             self,
             arg = sys.argv, 
@@ -73,19 +73,21 @@ class TArgParse:
             custom=False
             ):
         self.user_argument = arg
+        # What command the user actually called
         self.called = os.path.abspath(arg[0])
+        # What is the top script that initialized this object
         caller = os.path.abspath(inspect.stack()[-1].filename)
         # This verifies that the parser has been called from the main script. I am not sure I like it but I really do not see why this should ever be called in a different way, as its intention is to literally parse the user input. Warning seems appropriate.
         self.caller_warning = not caller == self.called
         if not custom and self.caller_warning:
-            print("Warning: Argument parser might have been called incorrectly. If you are a user there might be a problem with your input, try to type 'scriptname -h' for help. \n", "Continuing anyway.")
+            print(f"Warning: Argument parser might have been called incorrectly. If you are a user there might be a problem with your input, try to type '{self.called} --help' for help. \n", "Continuing anyway.")
         # Initiate optional and positional arguments
         self.optional = opt_method(arg)
         self.positional = man_method(arg)
         # Initiate a help string
         self.help = f'To see detailed help, type {caller} --help'
         if not custom and self.caller_warning:
-            self.help += f'\n You might also want to try {os.path.abspath(arg[0])} --help'
+            self.help += f'\n You might also want to try {self.called} --help'
     
     # Functions for printing various values follow, mostly for debugging
     def print_arg(self):
@@ -268,3 +270,13 @@ def runner(function, file, verbose=True, force=False, active = True):
         print('Error: Cannot continue since a backup file cannot be created')
 
                 
+def help(name):
+    help_text = f"Instended use: '{name} [name of script] [optional arguments] [file1] [file2] [file 3]'\n\n" + f"Example: '{name}' uncommenter -nv myfile.tex /home/username/Documents/myotherfile.tex \n\n" + f"Example above will run the files myfile.tex (in the current working directory) and the file /home/username/Documents/myotherfile.tex through the uncommenter script which will remove all latex comments (starting with the percentage sign %)\n" + "Note: Number of files passed as arguments is arbitrary \n\n"
+    h=''
+    #Take list of scripts and list of optional commands from the help.txt file
+    try:
+        with open('help.txt', 'r', encoding='utf-8') as hfile:
+            h = hfile.read()
+    except (UnicodeDecodeError, OSError):
+        return f'problem with help.txt. Check help.txt is in the same direcotry as this {name}'
+    return help_text + h
