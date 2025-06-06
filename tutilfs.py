@@ -142,25 +142,6 @@ def scriptToRun(positional: list[str], called: str):
     else:
         return positional[0]
     
-# def separator(file, force=False, verbose=True):
-#     # Inform user of what will be modified
-#     print("The file to be modified: " + file)
-    
-#     # Here we store the absolute path to the input file, so that if the user's working directory was ~/Documents/text-files and they passe example.txt, then this should resolve to /home/username/Documents/text-files/example.txt
-#     path_to_input= os.path.abspath(file)
-#     print("Absolute path to the file to be modified:" + path_to_input)
-
-#     # This attempts to create a backup file in the tutil-log folder (subdirectory of the directory of the passed file). When it succeeds, it continues with the logic, otherwise prints a message and does nothing.
-#     # FIX PERMISSIONS LATER []
-#     if log_backup(file) or force:
-#         # Here we store the modified file as a list of lines.
-#         mf_l, number_of_adjustments = sentence_split(file, verbose)
-#         # The modified file will overwrite the input file
-#         print_file(mf_l, path_to_input)
-#         print('Success!\n', f'The file: {path_to_input} has been modified and lines should be separated accordingly.')
-#         print('The number of line splits carried out:', str(number_of_adjustments))
-#     else:
-#         print('Error: Cannot continue since a backup file cannot be created')
 
 def uncommenter(path):
     counter = 0
@@ -209,7 +190,6 @@ def uncommenter(path):
             continue
     return modified_lines, counter
     
-
 # This function takes as argument a path to a text file and returns a separated list of sentences, which are modified so that lines with multiple sentences get split into separete lines. If the optional parameter count is True, then the function also returns the number of changes made as a second output.
 def separator(path):
     counter = 0
@@ -246,10 +226,15 @@ def separator(path):
 
 
 def runner(function, file, verbose=True, force=False, active = True):
+    # Exception for 'lister' : every function ran through this is expected to be something that modifies a text file. For those functions, active = True. If the function to be ran does not do anything to any files, then active = False and we simply run it
     if not active:
         function()
         sys.exit()
     print(f"You called {function.__name__} to modify a file.")
+    # Check the file is valid
+    if not is_valid_text_file(file):
+        print(f"{file} is not a valid argument. Only existing text files in utf8 encoding are valid")
+        return
      # Inform user of what will be modified
     print("The file to be modified: " + file)
     
@@ -279,4 +264,4 @@ def help(name):
             h = hfile.read()
     except (UnicodeDecodeError, OSError):
         return f'problem with help.txt. Check help.txt is in the same direcotry as this {name}'
-    return help_text + h
+    return help_text 

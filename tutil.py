@@ -26,22 +26,16 @@ def main():
     script = t.scriptToRun(parsed.positional, parsed.called)
     if script == 'separator':
         for file in parsed.positional[1:]:
-            if not t.is_valid_text_file(file):
-                print(f"{file} is not a valid argument. Only existing text files in utf8 encoding are valid")
-                continue
             t.runner(t.separator, file, force, verbose)
     
     if script == 'lister':
-        t.runner(t.lister, '', active =False)
+        t.runner(t.lister, '', active = False)
 
     if script == 'testscript':
         print('test')
 
     if script == 'uncommenter':
         for file in parsed.positional[1:]:
-            if not t.is_valid_text_file(file):
-                print(f"{file} is not a valid argument. Only existing text files in utf8 encoding are valid")
-                continue
             t.runner(t.uncommenter, file, force, verbose)
 
 #This makes it run only if the script is called directly by its name
