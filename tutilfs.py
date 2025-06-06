@@ -49,6 +49,7 @@ def print_file(file_l: list[str], out_path):
             for line in file_l:
                 f.write(line + '\n')
 
+# Class for parsing the user input. There are publicly available options for this but they all have the disadvatnage, that by default, they talk to the user as if they know what they were doing. This is false. Therefore, I made a custom one and communication with the user is hanbled separately. 
 class TArgParse:
     # default method for parsing optional arguments
     def defaultOptional(list_of_args: list[str]):
@@ -65,6 +66,8 @@ class TArgParse:
                 list_positional_args.append(arg)
         return list_positional_args
     # Initilizes the new instance of this class
+    # A method for parsing out optional and a method for parsing out positional arguments can be specified, but by default we assume that everything starting with - is optional and everything else is positional. First argument is ignored because it is assumed to be the name of the script.
+    # The inteded way for this to be called is directly from the main script. So, unless custom == True, it is checked whether this is indeed done and if not a warning is thrown out. See [1].
     def __init__(
             self,
             arg = sys.argv, 
@@ -77,17 +80,17 @@ class TArgParse:
         self.called = os.path.abspath(arg[0])
         # What is the top script that initialized this object
         caller = os.path.abspath(inspect.stack()[-1].filename)
-        # This verifies that the parser has been called from the main script. I am not sure I like it but I really do not see why this should ever be called in a different way, as its intention is to literally parse the user input. Warning seems appropriate.
+        # [1] This verifies that the parser has been called from the main script. I am not sure I like it but I really do not see why this should ever be called in a different way, as its intention is to literally parse the user input. Warning seems appropriate.
         self.caller_warning = not caller == self.called
+        # Initiate a help string
+        self.help = f'To see detailed help, type {caller} --help or {os.path.basename(caller)} --help \n'
         if not custom and self.caller_warning:
-            print(f"Warning: Argument parser might have been called incorrectly. If you are a user there might be a problem with your input, try to type '{self.called} --help' for help. \n", "Continuing anyway.")
+            self.help += f'You might also want to try {self.called} --help {os.path.basename(self.called)} --help \n'
+        if not custom and self.caller_warning:
+            print(f"Warning: Argument parser might have been called incorrectly. If you are a user there might be a problem with your input \n", self.help, "Continuing anyway.")
         # Initiate optional and positional arguments
         self.optional = opt_method(arg)
         self.positional = man_method(arg)
-        # Initiate a help string
-        self.help = f'To see detailed help, type {caller} --help'
-        if not custom and self.caller_warning:
-            self.help += f'\n You might also want to try {self.called} --help'
     
     # Functions for printing various values follow, mostly for debugging
     def print_arg(self):
@@ -103,15 +106,16 @@ def is_valid_text_file(filepath, encoding='utf-8', test_read_bytes=1024, strict 
     # Recovers the extension of the file.
     extension = os.path.splitext(os.path.basename(path))[1] 
     valid_extensions=['.tex', '.txt']
-    # Step 1: Check if the path exists and is a file
+    # Check if the path exists and is a file
     if not path.is_file():
         return False
     
-    # Step 2: Try opening it as a text file in the specified encoding
+    # Try opening it as a text file in the specified encoding
     try:
         with path.open('r', encoding=encoding) as f:
-            # Step 3: Try reading a bit to confirm it's decodable
+            # Try reading a bit to confirm it's decodable
             f.read(test_read_bytes)
+            # Check that the files has a valid extension, .txt or .tex. Otherwise the user is prompted to confirm unless not strict. Sensible is not strict == force.
             if extension not in valid_extensions and strict:
                 user_input = input("You have asked this script to adjust a file which does not have an extension of .txt or .tex.\n" +
                             "This script should only be applied to text files and is intended specifically for .tex files.\n" +
@@ -123,7 +127,7 @@ def is_valid_text_file(filepath, encoding='utf-8', test_read_bytes=1024, strict 
         return True
     except (UnicodeDecodeError, OSError):
         # Catches binary files or encoding errors, or inaccessible files
-        # I will not pretend I understand exception handling in Python. Been years since I last saw it and I will just trust ChatGPT for now.
+        # ChatGPT did this part I do not know how exception handling works for now.
         return False
 
 # Lists available scripts
@@ -132,17 +136,20 @@ def lister():
     for scr in list_of_scripts:
         print(scr)
 
+# This checks that the first positional argument is a name of a script and if so, returns the script. Otherwise the program is aborted
 def scriptToRun(positional: list[str], called: str):
+    # Case of no positional arguments fiven
     if positional == []:
         print(f'You need to specify name of the script, e.g. "{called} separator". For list of scripts type "{called} lister".')
         sys.exit()
+    # If some positional arguments are given, we check that the first one is valid.
     if positional[0] not in list_of_scripts:
         msg = positional[0] + ' is not a valid name of a script that can be ran.\n' + f"Type '{called} lsscr' to see the list of available scripts or {called} --help for help"
         sys.exit(msg)
     else:
         return positional[0]
     
-
+# This function takes as argument a path to a text file and returns a separated list of sentences, which are modified so that all the latex comments are removed.
 def uncommenter(path):
     counter = 0
     # Open the file and pass the lines to the variable 'lines'. The type is list. Each memeber of the list is a line.
@@ -187,7 +194,7 @@ def uncommenter(path):
             continue
     return modified_lines, counter
     
-# This function takes as argument a path to a text file and returns a separated list of sentences, which are modified so that lines with multiple sentences get split into separete lines. If the optional parameter count is True, then the function also returns the number of changes made as a second output.
+# This function takes as argument a path to a text file and returns a separated list of sentences, which are modified so that lines with multiple sentences get split into separete lines. 
 def separator(path):
     counter = 0
     # Open the file and pass the lines to the variable 'lines'. The type is list. Each memeber of the list is a line.
@@ -263,6 +270,12 @@ def help(name):
         return f'problem with help.txt. Check help.txt is in the same direcotry as this {name}'
     return help_text 
 
+# prints if verbose
 def pv(message, verbose = True):
     if verbose:
         print(message)
+
+#test targparse
+def test():
+    parsed = TArgParse(['asdf', 'ghjk'])
+    print(parsed.help)
