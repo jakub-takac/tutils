@@ -1,6 +1,8 @@
 *.tex
 *.txt
+!help.txt
 *.svg
 *.png
 
 /__pycache__
+/tutil-log

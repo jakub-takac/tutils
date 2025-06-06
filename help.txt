@@ -1,0 +1,11 @@
+List of scripts:
+
+uncommenter: removes comments from the file (starting with %)
+separator: adds newlines between sentences if there were not new lines previously
+lister: lists all available scripts (if lister lists different scripts than what you see here, then something is not updated)
+
+List of optional arguments:
+
+-f: forcefully runs the script, making it run even when no backup file can be created and even when a suspicious file is passed as argument (everything that is not .txt or .tex is treated as suspicious)
+-nv: 'non-verbose', makes the script run with a lot less information about displayed in the command line
+-h: displays a help message and ignores all other input (--help has the same effect)
