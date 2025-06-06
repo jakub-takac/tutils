@@ -15,15 +15,12 @@ import tutilfs as t
 def main():
     # Parse user input
     parsed = t.TArgParse()
-    #Verbosity doesn't really work yet
     verbose = not '-nv' in parsed.optional
     force = '-f' in parsed.optional
     help = '--help' in parsed.optional or '-h' in parsed.optional
     if help:
         print(t.help(sys.argv[0]))
         sys.exit()    
-    # Go through all positional arguments
-    print(force)
     script = t.scriptToRun(parsed.positional, parsed.called)
     if script == 'separator':
         for file in parsed.positional[1:]:
