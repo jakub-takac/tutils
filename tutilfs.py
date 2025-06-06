@@ -10,7 +10,7 @@ from pathlib import Path
 list_of_scripts=['separator', 'testscript', 'lister', 'uncommenter']
 
 # This function takes as input a file (rather, its name). It makes a copy of the file into the directory /path/to/tutil-log, where the path to file is /path/to/file. The backup copy has the name: name_of_file-date_time.extension_of_file. So that if file is example.txt, the copy is /path/to/tutil-log/example-date_time.txt. If this action is succesful, True is returned, if not, False is returned and an error message printed.
-def log_backup(file):
+def log_backup(file, verbose = True):
     # This stores the path to the directory in which the file is located
     input_dir = os.path.dirname(os.path.abspath(file))
     # This stores the base name of the file, so that for example /path/to/example.txt file would yield example.txt
@@ -20,7 +20,7 @@ def log_backup(file):
 
     #This stores the current time
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    print('Timestamp to be used for the backup file: ', timestamp)
+    pv('Timestamp to be used for the backup file: ' + timestamp, verbose)
 
     # This stores the directory for the log which will in this case look something like /path/to/tutil-log
     log_dir=os.path.join(input_dir, 'tutil-log')
@@ -40,7 +40,7 @@ def log_backup(file):
     with open(file, 'r', encoding='utf-8') as src, open(backup_path, 'w', encoding='utf-8') as dst:
         dst.write(src.read())
     # Print what has been done
-    print(f'log_backup has been called for file {os.path.abspath(file)} and a backup copy has been saved as:\n', f'{backup_path}')
+    pv(f'log_backup has been called for file {os.path.abspath(file)} and a backup copy has been saved as:\n' + f'{backup_path}', verbose)
     return True # This is so that whoever calles this function can verify if the backup has been made
 
 # This functions takes as argument a list of strings, where each entry is interpreted as a separate line. Then this is written into the file specifiad by its path 'out_path'
@@ -150,12 +150,9 @@ def uncommenter(path):
         lines = file.readlines()
     # Here we will store the modified list of lines where there should be exactly one sentence per line.
     modified_lines= []
-    user_msg = f'\n Comments will be removed from {path} \n' + 'Do you wish to \n' '1) Remove comments and where a comment took up entire line leave a blank line (type "l" and enter) \n' + '2) Remove comments and where a comment took up entire line remove the line (type "r" and enter)\n' + '3) Abort (type "a" and enter)\n' + 'Typing anything else will result in option 1)'
+    user_msg = f'\n Comments will be removed from {path} \n' + 'Do you wish to \n' '1) Remove comments and where a comment took up entire line leave a blank line (type "l" and enter) \n' + '2) Remove comments and where a comment took up entire line remove the line (type "r" and enter)\n' + 'Typing anything else will result in option 2)'
     inp = input(user_msg).strip().lower()
-    if inp == 'a':
-        sys.exit()
-    else:
-        remove = inp == 'r'
+    remove = not inp == 'l'
     for line in lines:
         stripped_line = line.rstrip('\n')
         changed = False
@@ -224,37 +221,37 @@ def separator(path):
         modified_lines.extend(temp_line.split('\n'))
     return modified_lines, counter
 
-
+# Wrapper to run the scripts. Intended for functions that take a file and do somthing to it and return the modified file as a list of strings, each element of the list corresponds to a line. Can also run functions with no input or outputs if active=False
 def runner(function, file, verbose=True, force=False, active = True):
     # Exception for 'lister' : every function ran through this is expected to be something that modifies a text file. For those functions, active = True. If the function to be ran does not do anything to any files, then active = False and we simply run it
     if not active:
         function()
         sys.exit()
-    print(f"You called {function.__name__} to modify a file.")
+    pv(f"You called {function.__name__} to modify a file.", verbose)
     # Check the file is valid
-    if not is_valid_text_file(file):
+    if not is_valid_text_file(file, strict = not force):
         print(f"{file} is not a valid argument. Only existing text files in utf8 encoding are valid")
         return
      # Inform user of what will be modified
-    print("The file to be modified: " + file)
+    pv("The file to be modified: " + file, verbose)
     
     # Here we store the absolute path to the input file, so that if the user's working directory was ~/Documents/text-files and they passe example.txt, then this should resolve to /home/username/Documents/text-files/example.txt
     path_to_input= os.path.abspath(file)
-    print("Absolute path to the file to be modified:" + path_to_input)
+    pv("Absolute path to the file to be modified:" + path_to_input, verbose)
 
     # This attempts to create a backup file in the tutil-log folder (subdirectory of the directory of the passed file). When it succeeds, it continues with the logic, otherwise prints a message and does nothing.
     # FIX PERMISSIONS LATER []
-    if log_backup(file) or force:
+    if log_backup(file, verbose) or force:
         # Here we store the modified file as a list of lines.
         mf_l, number_of_adjustments = function(file)
         # The modified file will overwrite the input file
         print_file(mf_l, path_to_input)
         print('Success!\n', f'The file: {path_to_input} has been modified by {function.__name__}.')
-        print('The number of adjustments carried out:', str(number_of_adjustments))
+        pv('The number of adjustments carried out:' + str(number_of_adjustments), verbose)
     else:
         print('Error: Cannot continue since a backup file cannot be created')
 
-                
+# returns a string giving descrition of how to use the program                
 def help(name):
     help_text = f"Instended use: '{name} [name of script] [optional arguments] [file1] [file2] [file 3]'\n\n" + f"Example: '{name}' uncommenter -nv myfile.tex /home/username/Documents/myotherfile.tex \n\n" + f"Example above will run the files myfile.tex (in the current working directory) and the file /home/username/Documents/myotherfile.tex through the uncommenter script which will remove all latex comments (starting with the percentage sign %)\n" + "Note: Number of files passed as arguments is arbitrary \n\n"
     h=''
@@ -265,3 +262,7 @@ def help(name):
     except (UnicodeDecodeError, OSError):
         return f'problem with help.txt. Check help.txt is in the same direcotry as this {name}'
     return help_text 
+
+def pv(message, verbose = True):
+    if verbose:
+        print(message)

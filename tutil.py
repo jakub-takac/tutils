@@ -23,10 +23,11 @@ def main():
         print(t.help(sys.argv[0]))
         sys.exit()    
     # Go through all positional arguments
+    print(force)
     script = t.scriptToRun(parsed.positional, parsed.called)
     if script == 'separator':
         for file in parsed.positional[1:]:
-            t.runner(t.separator, file, force, verbose)
+            t.runner(t.separator, file, verbose=verbose, force=force)
     
     if script == 'lister':
         t.runner(t.lister, '', active = False)
@@ -36,7 +37,7 @@ def main():
 
     if script == 'uncommenter':
         for file in parsed.positional[1:]:
-            t.runner(t.uncommenter, file, force, verbose)
+            t.runner(t.uncommenter, file, verbose=verbose, force=force)
 
 #This makes it run only if the script is called directly by its name
 if __name__ == "__main__":
