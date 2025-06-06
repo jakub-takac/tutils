@@ -9,6 +9,7 @@ from pathlib import Path
 
 list_of_scripts=['separator', 'testscript', 'lister', 'uncommenter']
 
+# h
 # This function takes as input a file (rather, its name). It makes a copy of the file into the directory /path/to/tutil-log, where the path to file is /path/to/file. The backup copy has the name: name_of_file-date_time.extension_of_file. So that if file is example.txt, the copy is /path/to/tutil-log/example-date_time.txt. If this action is succesful, True is returned, if not, False is returned and an error message printed.
 def log_backup(file, verbose = True):
     # This stores the path to the directory in which the file is located
