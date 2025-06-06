@@ -263,13 +263,14 @@ def runner(function, file, verbose=True, force=False, active = True):
 def help(name):
     help_text = f"Instended use: '{name} [name of script] [optional arguments] [file1] [file2] [file 3]'\n\n" + f"Example: '{name}' uncommenter -nv myfile.tex /home/username/Documents/myotherfile.tex \n\n" + f"Example above will run the files myfile.tex (in the current working directory) and the file /home/username/Documents/myotherfile.tex through the uncommenter script which will remove all latex comments (starting with the percentage sign %)\n" + "Note: Number of files passed as arguments is arbitrary \n\n"
     h=''
+    path_to_help=f"{os.path.dirname(os.path.abspath(name))}/help.txt"
     #Take list of scripts and list of optional commands from the help.txt file
     try:
-        with open('help.txt', 'r', encoding='utf-8') as hfile:
+        with open(path_to_help, 'r', encoding='utf-8') as hfile:
             h = hfile.read()
     except (UnicodeDecodeError, OSError):
         return f'problem with help.txt. Check help.txt is in the same direcotry as this {name}'
-    return help_text 
+    return help_text + h
 
 # prints if verbose
 def pv(message, verbose = True):
